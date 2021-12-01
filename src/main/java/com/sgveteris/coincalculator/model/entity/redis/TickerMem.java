@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisHash;
 import javax.persistence.Id;
 import java.io.Serializable;
 
-@RedisHash(value = "ticker", timeToLive = 100)
+@RedisHash(value = "ticker", timeToLive = 10)
 @Data
 @Builder
 public class TickerMem implements Serializable {
