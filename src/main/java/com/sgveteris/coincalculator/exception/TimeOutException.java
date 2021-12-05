@@ -1,11 +1,8 @@
 package com.sgveteris.coincalculator.exception;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@Data
 @ResponseStatus(HttpStatus.NOT_FOUND)
 public class TimeOutException extends RuntimeException {
     private String resourceName;
