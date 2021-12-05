@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Service
@@ -55,8 +56,9 @@ public class CalculatorServiceImpl extends BaseService implements CalculatorServ
     @Override
     public TransactionResponse getTicker(TransactionRequest transactionRequest) {
         Map<String, Currency> currencyMap = validCurrency(transactionRequest.getFrom(), transactionRequest.getTo());
-        var pair = currencyMap.get(transactionRequest.getFrom()).getSymbol().toUpperCase() + "-" +
-                currencyMap.get(transactionRequest.getTo()).getSymbol().toUpperCase();
+        var from = currencyMap.get(transactionRequest.getFrom());
+        var to = currencyMap.get(transactionRequest.getTo());
+        var pair = from.getSymbol() + "-" + to.getSymbol();
         Ticker ticker = blockchainClient.getTicker(pair);
         TickerMem tickerMem = TickerMem.builder()
                 .last_trade_price(ticker.getLast_trade_price())
@@ -65,8 +67,8 @@ public class CalculatorServiceImpl extends BaseService implements CalculatorServ
                 .build();
         var cacheId = tickerMemRepository.save(tickerMem).getId();
         return TransactionResponse.builder()
-                .from(transactionRequest.getFrom())
-                .to(transactionRequest.getTo())
+                .from(from.getSymbol())
+                .to(to.getSymbol())
                 .calculatedAmount(transactionRequest.getValue() / tickerMem.getLast_trade_price())
                 .date(Instant.now())
                 .value(transactionRequest.getValue())
@@ -75,9 +77,9 @@ public class CalculatorServiceImpl extends BaseService implements CalculatorServ
     }
 
     private Map<String, Currency> validCurrency(String from, String to) {
-        Currency fromCurrency = currencyRepository.findBySymbol(from)
+        Currency fromCurrency = currencyRepository.findBySymbol(from.toUpperCase(Locale.ROOT))
                 .orElseThrow(() -> new BadRequestException("invalid symbol: " + from));
-        Currency toCurrency = currencyRepository.findBySymbol(to)
+        Currency toCurrency = currencyRepository.findBySymbol(to.toUpperCase(Locale.ROOT))
                 .orElseThrow(() -> new BadRequestException("invalid symbol: " + to));
         Map<String, Currency> currencyMap = new HashMap<>();
         currencyMap.put(from, fromCurrency);
